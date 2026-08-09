@@ -92,13 +92,18 @@ $(DATA_DIR):
 VERSION_FLAG = $(if $(VERSION),-version $(VERSION),)
 
 generate: all
-	@for exe in $(EXECUTABLES); do \
+	@failures=0; \
+	for exe in $(EXECUTABLES); do \
 		echo "[generate] $$exe $(VERSION_FLAG)"; \
 		cp $(SDK_DIR)/bin/*.dll $(BIN_DIR)/; \
 		(cd "$(GENERATOR_WORK_DIR)" && \
 			WINEDEBUG=-all $(RUNNER) "$(GENERATOR_BIN_DIR)/$${exe##*/}" $(VERSION_FLAG)) \
-			|| echo "FAILED: $$exe"; \
-	done
+			|| { echo "[generate] FAILED: $$exe" >&2; failures=$$((failures + 1)); }; \
+	done; \
+	if [ "$$failures" -ne 0 ]; then \
+		echo "[generate] FAILED: $$failures generator(s) did not produce fixtures" >&2; \
+		exit 1; \
+	fi
 
 # Generate every SDK file format into an isolated directory and smoke-import
 # every resulting SKP with the requested local skppy checkout.
@@ -136,7 +141,9 @@ writer-validation: $(WRITER_VALIDATORS)
 	cp $(SDK_DIR)/bin/*.dll $(WRITER_BIN_DIR)/
 	@writer_data=$$($(PATH_CONVERTER) "$(abspath $(WRITER_DATA_DIR))"); \
 		for validator in $(WRITER_VALIDATORS); do \
-			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" || exit 1; \
+			echo "[writer-validate] $$validator"; \
+			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" \
+				|| { echo "[writer-validate] FAILED: $$validator" >&2; exit 1; }; \
 		done
 
 legacy-writer-validation: $(WRITER_VALIDATORS)
@@ -150,7 +157,9 @@ legacy-writer-validation: $(WRITER_VALIDATORS)
 	cp $(SDK_DIR)/bin/*.dll $(WRITER_BIN_DIR)/
 	@writer_data=$$($(PATH_CONVERTER) "$(abspath $(LEGACY_WRITER_DATA_DIR))"); \
 		for validator in $(WRITER_VALIDATORS); do \
-			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" || exit 1; \
+			echo "[legacy-writer-validate] $$validator"; \
+			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" \
+				|| { echo "[legacy-writer-validate] FAILED: $$validator" >&2; exit 1; }; \
 		done
 
 $(BIN_DIR)/blender/%.exe: $(BLENDER_VALIDATOR_DIR)/%.c $(WRITER_VALIDATOR_DIR)/test_utils.c
@@ -162,7 +171,9 @@ blender-validation: $(BLENDER_VALIDATORS)
 	cp $(SDK_DIR)/bin/*.dll $(BIN_DIR)/blender/
 	@blender_data=$$($(PATH_CONVERTER) "$(abspath $(BLENDER_EXPORT_DIR))"); \
 		for validator in $(BLENDER_VALIDATORS); do \
-			WINEDEBUG=-all $(RUNNER) $$validator "$$blender_data" || exit 1; \
+			echo "[blender-validate] $$validator"; \
+			WINEDEBUG=-all $(RUNNER) $$validator "$$blender_data" \
+				|| { echo "[blender-validate] FAILED: $$validator" >&2; exit 1; }; \
 		done
 
 clean:
