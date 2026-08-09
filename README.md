@@ -71,10 +71,6 @@ save target, and runs modern and SketchUp Make 2017 writer validators through
 the SDK. Blender 4.5 and 5.2 addon exports are validated through the same SDK
 from the `skppy` repository's Blender workflow.
 
-If either repository is private, add a fine-grained PAT with **Contents: Read**
-for the other repository as the `SKPPY_TOKEN` Actions secret in `skppy-tests`
-and `SKPPY_TESTS_TOKEN` in `skppy`.
-
 `run_tests.py` reads fixtures from `data/` by default. Set `OUTPUT_DIR` to use
 another generated fixture directory.
 
