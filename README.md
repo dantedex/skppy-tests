@@ -20,7 +20,8 @@ oracle for another:
 
 The repository includes the public C API headers in `include/` and the four
 runtime/import libraries in `bin/` needed by the Windows conformance
-executables. Optional SDK documentation and fixture resources are not bundled.
+executables. Writer fixtures are self-contained and do not require external
+resources.
 
 ## Requirements
 
@@ -38,7 +39,7 @@ The bundled SDK layout is:
 ```
 
 Set `SDK_DIR` to another SDK root to test against a different public SDK
-release. Such a directory may also contain optional fixture resources.
+release.
 
 ## Repository layout
 

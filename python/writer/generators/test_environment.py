@@ -4,17 +4,16 @@ from pathlib import Path
 from .common import one_pixel_jpeg, run
 
 
-def generate(skppy, destination: Path) -> None:
-    image_path = Path("resources/studio.exr")
-    if not image_path.is_file():
-        raise FileNotFoundError(f"environment resource not found: {image_path}")
+ENVIRONMENT_DATA = b"#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 1\n\x80\x80\x80\x80"
 
+
+def generate(skppy, destination: Path) -> None:
     model = skppy.new_model()
     environment = skppy.EnvironmentEntry(
         id=1,
         name="StudioEnvironment",
-        image_filename=image_path.name,
-        image_data=image_path.read_bytes(),
+        image_filename="studio.hdr",
+        image_data=ENVIRONMENT_DATA,
         thumbnail_data=one_pixel_jpeg(),
         use_as_skydome=True,
         use_for_reflections=True,
@@ -22,8 +21,8 @@ def generate(skppy, destination: Path) -> None:
     reflection = skppy.EnvironmentEntry(
         id=2,
         name="ReflectionEnvironment",
-        image_filename=image_path.name,
-        image_data=image_path.read_bytes(),
+        image_filename="studio.hdr",
+        image_data=ENVIRONMENT_DATA,
         thumbnail_data=one_pixel_jpeg(),
         use_as_skydome=False,
         use_for_reflections=True,

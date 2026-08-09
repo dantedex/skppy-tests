@@ -2,21 +2,17 @@
 import uuid
 from pathlib import Path
 
-from .common import run
+from .common import one_pixel_png, run
 
 
 def generate(skppy, destination: Path) -> None:
-    resource = (
-        Path(__file__).resolve().parents[3]
-        / "resources/brick_wall/brick_wall_21_basecolor.png"
-    )
     model = skppy.new_model()
     material = model.add_material("_auto_", color=skppy.Color(0, 0, 0))
     material.texture = skppy.Texture(
-        filename=resource.name,
+        filename="writer-image.png",
         x_scale=512.0,
         y_scale=512.0,
-        data=resource.read_bytes(),
+        data=one_pixel_png(),
     )
     material.has_texture = True
     definition = model.add_definition("brick_wall_21_basecolor_image")
