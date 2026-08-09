@@ -1,0 +1,2 @@
+[lint]
+# No per-file ignores needed - all imports are at module top level.

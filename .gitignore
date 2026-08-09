@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+*.egg-info/
+*.egg
+
+# Test / lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# C build artifacts (compiled generators)
+bin/
+c/generators/*.o
+c/generators/*.obj
+*.exe
+*.dll
+*.lib
+
+# Generated test fixtures
+data/
+
+# Output directory (when OUTPUT_DIR is set to a custom path)
+# Only ignore the default bin/ and data/ at project root; custom OUTPUT_DIR
+# paths are not tracked by git.
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Runtime and import libraries intentionally distributed for conformance runs.
+# Generated executables and all other bin/ contents remain ignored.
+!bin/
+bin/*
+!bin/SketchUpAPI.dll
+!bin/SketchUpCommonPreferences.dll
+!bin/SketchUpAPI.lib
+!bin/sketchup.lib
