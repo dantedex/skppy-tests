@@ -14,6 +14,7 @@ from version_matrix import (
     changed_skp_files,
     import_fixture,
     normalize_versions,
+    print_failure_summary,
     retry_failed_generators,
     run_semantic_validation,
 )
@@ -141,3 +142,46 @@ def test_import_fixture_reports_the_active_parser(
 
     assert result.status == "loaded"
     assert result.parser == expected_parser
+
+
+def test_failure_summary_prints_each_failure_and_captured_output(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Make CI logs actionable without downloading the JSON report."""
+    report = {
+        "versions": {
+            "SU8": {
+                "generation": [
+                    {
+                        "generator": "test_broken.exe",
+                        "error": "generator exited with status 1",
+                        "output_tail": "SDK error",
+                    }
+                ],
+                "imports": [
+                    {
+                        "filename": "broken.skp",
+                        "status": "failed",
+                        "error_type": "ParseError",
+                        "error": "bad archive",
+                    }
+                ],
+                "semantic": {
+                    "status": "failed",
+                    "error": "semantic suite exited with status 1",
+                    "output_tail": "FAIL: expected face",
+                },
+            }
+        }
+    }
+
+    print_failure_summary(report)
+
+    assert capsys.readouterr().err == (
+        "\nMatrix failures:\n"
+        "  [SU8] generator test_broken.exe: generator exited with status 1\n"
+        "    SDK error\n"
+        "  [SU8] import broken.skp: ParseError: bad archive\n"
+        "  [SU8] semantic validation: semantic suite exited with status 1\n"
+        "    FAIL: expected face\n"
+    )

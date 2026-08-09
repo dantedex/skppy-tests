@@ -396,6 +396,49 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
     return report
 
 
+def print_failure_summary(report: dict[str, Any]) -> None:
+    """Print matrix failures and captured subprocess output to the terminal."""
+    failures: list[tuple[str, str, str | None]] = []
+    for version, version_report in report["versions"].items():
+        for result in version_report["generation"]:
+            if error := result["error"]:
+                failures.append(
+                    (
+                        f"[{version}] generator {result['generator']}",
+                        error,
+                        result["output_tail"],
+                    )
+                )
+        for result in version_report["imports"]:
+            if result["status"] != "loaded":
+                error = result["error"] or "fixture could not be loaded"
+                failures.append(
+                    (
+                        f"[{version}] import {result['filename']}",
+                        f"{result['error_type'] or 'Error'}: {error}",
+                        None,
+                    )
+                )
+        semantic = version_report["semantic"]
+        if semantic is not None and semantic["status"] != "passed":
+            failures.append(
+                (
+                    f"[{version}] semantic validation",
+                    semantic["error"] or "semantic validation failed",
+                    semantic["output_tail"],
+                )
+            )
+
+    if not failures:
+        return
+    print("\nMatrix failures:", file=sys.stderr, flush=True)
+    for subject, error, output_tail in failures:
+        print(f"  {subject}: {error}", file=sys.stderr, flush=True)
+        if output_tail:
+            for line in output_tail.splitlines():
+                print(f"    {line}", file=sys.stderr, flush=True)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -440,6 +483,7 @@ def main() -> int:
     summary = report["summary"]
     print(f"\nReport: {report_path}")
     print(json.dumps(summary, indent=2, sort_keys=True))
+    print_failure_summary(report)
     return (
         1
         if (
