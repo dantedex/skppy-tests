@@ -41,7 +41,7 @@ jobs:
         run: pip install -e ./skppy pytest
 
       - name: Run Python tests
-        run: python -m pytest -q
+        run: python -m pytest -q python
 
   sdk:
     name: Public SDK conformance
