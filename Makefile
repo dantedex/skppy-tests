@@ -34,6 +34,8 @@ OUTPUT_DIR ?=
 # to the legacy defaults (bin/, data/) at the project root.
 BIN_DIR := $(if $(OUTPUT_DIR),$(OUTPUT_DIR)/bin,bin)
 DATA_DIR := $(if $(OUTPUT_DIR),$(OUTPUT_DIR)/data,data)
+GENERATOR_WORK_DIR := $(if $(OUTPUT_DIR),$(abspath $(OUTPUT_DIR)),$(CURDIR))
+GENERATOR_BIN_DIR := $(abspath $(BIN_DIR))
 
 # SketchUp file-format version to save as.  Override on the command line, e.g.:
 #   make generate VERSION=SU8
@@ -89,7 +91,9 @@ generate: all
 	@for exe in $(EXECUTABLES); do \
 		echo "[generate] $$exe $(VERSION_FLAG)"; \
 		cp $(SDK_DIR)/bin/*.dll $(BIN_DIR)/; \
-		WINEDEBUG=-all wine $$exe $(VERSION_FLAG) || echo "FAILED: $$exe"; \
+		(cd "$(GENERATOR_WORK_DIR)" && \
+			WINEDEBUG=-all wine "$(GENERATOR_BIN_DIR)/$${exe##*/}" $(VERSION_FLAG)) \
+			|| echo "FAILED: $$exe"; \
 	done
 
 # Generate every SDK file format into an isolated directory and smoke-import
