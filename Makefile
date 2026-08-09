@@ -22,6 +22,10 @@ SDK_DIR ?= .
 CC = x86_64-w64-mingw32-gcc
 CFLAGS = -I$(SDK_DIR)/include -DSU_SUPPRESS_DEPRECATION_WARNINGS -O2
 LDFLAGS = $(SDK_DIR)/bin/SketchUpAPI.lib $(SDK_DIR)/bin/sketchup.lib
+RUNNER ?= wine
+PATH_CONVERTER ?= winepath -w
+NATIVE_RUNNER ?= 0
+MATRIX_RUNNER_ARGS := $(if $(filter 1 true yes,$(NATIVE_RUNNER)),--native,--wine $(RUNNER))
 
 GEN_DIR = c/generators
 VALIDATOR_DIR = c/validators
@@ -92,7 +96,7 @@ generate: all
 		echo "[generate] $$exe $(VERSION_FLAG)"; \
 		cp $(SDK_DIR)/bin/*.dll $(BIN_DIR)/; \
 		(cd "$(GENERATOR_WORK_DIR)" && \
-			WINEDEBUG=-all wine "$(GENERATOR_BIN_DIR)/$${exe##*/}" $(VERSION_FLAG)) \
+			WINEDEBUG=-all $(RUNNER) "$(GENERATOR_BIN_DIR)/$${exe##*/}" $(VERSION_FLAG)) \
 			|| echo "FAILED: $$exe"; \
 	done
 
@@ -105,6 +109,7 @@ matrix: all
 		--output-dir $(MATRIX_DIR) \
 		--skppy-path $(SKPPY_PATH) \
 		--resources-dir $(SDK_DIR)/resources \
+		$(MATRIX_RUNNER_ARGS) \
 		--jobs $(MATRIX_JOBS) \
 		--clean \
 		$(if $(filter 1 true yes,$(SEMANTIC_VALIDATION)),--semantic-validation) \
@@ -129,10 +134,10 @@ writer-validation: $(WRITER_VALIDATORS)
 			--output-dir $(WRITER_DATA_DIR) || exit 1; \
 	done
 	cp $(SDK_DIR)/bin/*.dll $(WRITER_BIN_DIR)/
-	@writer_data=$$(winepath -w "$(abspath $(WRITER_DATA_DIR))"); \
+	@writer_data=$$($(PATH_CONVERTER) "$(abspath $(WRITER_DATA_DIR))"); \
 		for validator in $(WRITER_VALIDATORS); do \
-			WINEDEBUG=-all wine $$validator "$$writer_data" || exit 1; \
-	done
+			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" || exit 1; \
+		done
 
 legacy-writer-validation: $(WRITER_VALIDATORS)
 	mkdir -p $(LEGACY_WRITER_DATA_DIR)
@@ -143,9 +148,9 @@ legacy-writer-validation: $(WRITER_VALIDATORS)
 			--format sketchup_2017 || exit 1; \
 	done
 	cp $(SDK_DIR)/bin/*.dll $(WRITER_BIN_DIR)/
-	@writer_data=$$(winepath -w "$(abspath $(LEGACY_WRITER_DATA_DIR))"); \
+	@writer_data=$$($(PATH_CONVERTER) "$(abspath $(LEGACY_WRITER_DATA_DIR))"); \
 		for validator in $(WRITER_VALIDATORS); do \
-			WINEDEBUG=-all wine $$validator "$$writer_data" || exit 1; \
+			WINEDEBUG=-all $(RUNNER) $$validator "$$writer_data" || exit 1; \
 		done
 
 $(BIN_DIR)/blender/%.exe: $(BLENDER_VALIDATOR_DIR)/%.c $(WRITER_VALIDATOR_DIR)/test_utils.c
@@ -155,9 +160,9 @@ $(BIN_DIR)/blender/%.exe: $(BLENDER_VALIDATOR_DIR)/%.c $(WRITER_VALIDATOR_DIR)/t
 
 blender-validation: $(BLENDER_VALIDATORS)
 	cp $(SDK_DIR)/bin/*.dll $(BIN_DIR)/blender/
-	@blender_data=$$(winepath -w "$(abspath $(BLENDER_EXPORT_DIR))"); \
+	@blender_data=$$($(PATH_CONVERTER) "$(abspath $(BLENDER_EXPORT_DIR))"); \
 		for validator in $(BLENDER_VALIDATORS); do \
-			WINEDEBUG=-all wine $$validator "$$blender_data" || exit 1; \
+			WINEDEBUG=-all $(RUNNER) $$validator "$$blender_data" || exit 1; \
 		done
 
 clean:

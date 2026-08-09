@@ -116,6 +116,7 @@ def run_generator(
     version: str,
     version_root: Path,
     wine: str,
+    native: bool,
     timeout: float,
     resources_dir: Path | None,
 ) -> GeneratorResult:
@@ -134,8 +135,11 @@ def run_generator(
     environment = os.environ.copy()
     environment.setdefault("WINEDEBUG", "-all")
     try:
+        command = [str(executable.resolve()), "-v", version]
+        if not native:
+            command.insert(0, wine)
         completed = subprocess.run(
-            [wine, str(executable.resolve()), "-v", version],
+            command,
             cwd=work_root,
             capture_output=True,
             check=False,
@@ -324,6 +328,7 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
                     version=version,
                     version_root=version_root,
                     wine=args.wine,
+                    native=args.native,
                     timeout=args.generator_timeout,
                     resources_dir=args.resources_dir,
                 )
@@ -447,6 +452,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, default=Path("matrix"))
     parser.add_argument("--skppy-path", type=Path, default=Path("../skppy"))
     parser.add_argument("--wine", default="wine")
+    parser.add_argument("--native", action="store_true")
     parser.add_argument("--resources-dir", type=Path)
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--generator-timeout", type=float, default=120.0)

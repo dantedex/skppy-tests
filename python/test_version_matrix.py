@@ -16,6 +16,7 @@ from version_matrix import (
     normalize_versions,
     print_failure_summary,
     retry_failed_generators,
+    run_generator,
     run_semantic_validation,
 )
 
@@ -85,6 +86,32 @@ def test_retry_failed_generators_retries_only_failures_serially() -> None:
     assert [result.attempts for result in results] == [1, 2, 2]
     assert results[1].error is None
     assert results[2].error == "still failed"
+
+
+def test_native_generator_execution_does_not_prefix_the_command_with_wine(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Allow Windows CI to run the SDK executables without Wine."""
+    executable = tmp_path / "test_native.exe"
+    executable.touch()
+    captured = {}
+
+    def run(command, **kwargs):
+        captured["command"] = command
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("version_matrix.subprocess.run", run)
+    run_generator(
+        executable,
+        version="SU8",
+        version_root=tmp_path / "SU8",
+        wine="wine",
+        native=True,
+        timeout=30.0,
+        resources_dir=None,
+    )
+
+    assert captured["command"] == [str(executable.resolve()), "-v", "SU8"]
 
 
 def test_semantic_validation_uses_requested_fixture_and_skppy_paths(
