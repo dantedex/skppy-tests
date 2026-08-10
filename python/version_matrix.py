@@ -246,6 +246,7 @@ def run_semantic_validation(
     environment = os.environ.copy()
     environment["OUTPUT_DIR"] = str(version_root.resolve())
     python_path = str(skppy_path.resolve())
+    environment["SKPPY_PATH"] = python_path
     if inherited := environment.get("PYTHONPATH"):
         python_path = python_path + os.pathsep + inherited
     environment["PYTHONPATH"] = python_path

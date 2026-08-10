@@ -17,6 +17,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 VALIDATION_DIR = PROJECT_ROOT / "python" / "validation"
 sys.path.insert(0, str(VALIDATION_DIR))
 
+if skppy_path := os.environ.get("SKPPY_PATH"):
+    checkout = Path(skppy_path).resolve()
+    if not (checkout / "skppy" / "__init__.py").is_file():
+        raise RuntimeError(f"SKPPY_PATH is not a skppy checkout: {checkout}")
+    sys.path.insert(0, str(checkout))
+
 # Propagate OUTPUT_DIR to child tests via the environment.
 # When set, validation scripts look for data under $OUTPUT_DIR/data/.
 # When unset, they fall back to the project-root data/ directory.
