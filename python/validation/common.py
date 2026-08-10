@@ -14,7 +14,7 @@ FEATURE_MINIMUM_MAJOR = {
     "section_plane_name": 18,
     "layer_folders": 20,
     "layer_folder_membership": 21,
-    "dimension_point_reference_association": 21,
+    "dimension_point_reference_instance_path": 21,
 }
 
 
