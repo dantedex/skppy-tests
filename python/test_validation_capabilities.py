@@ -31,6 +31,8 @@ def test_capabilities_use_saved_version_for_every_container(legacy: bool) -> Non
 
     assert supports_feature(su2013, "attribute_dictionaries") is True
     assert supports_feature(su2013, "entity_attribute_dictionaries") is True
+    assert supports_feature(su2013, "vertex_attribute_dictionaries") is True
+    assert supports_feature(su2013, "layer_attribute_dictionaries") is False
     assert supports_feature(su2013, "section_plane_name") is False
     assert supports_feature(su2013, "layer_folders") is False
     assert supports_feature(su2020, "layer_folders") is True
@@ -49,11 +51,13 @@ def test_legacy_capability_boundaries_match_observed_generations() -> None:
     assert supports_feature(su3, "component_behavior") is False
     assert supports_feature(su4, "component_behavior") is True
     assert supports_feature(su4, "entity_attribute_dictionaries") is True
+    assert supports_feature(su4, "vertex_attribute_dictionaries") is True
     assert supports_feature(su4, "attribute_dictionaries") is False
     assert supports_feature(su4, "component_instance_name") is False
     assert supports_feature(su5, "component_instance_name") is True
     assert supports_feature(su7, "attribute_dictionaries") is True
     assert supports_feature(su2021, "dimension_point_reference_instance_path") is True
+    assert supports_feature(su2021, "layer_attribute_dictionaries") is True
 
 
 def test_unknown_version_or_feature_is_not_silently_supported() -> None:

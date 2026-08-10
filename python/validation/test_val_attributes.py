@@ -37,13 +37,19 @@ class TestSkpAttributes(BaseSkpTest):
         vertex_dictionaries = model.entities.attribute_dictionaries_by_entity_id.get(
             v_start.id, []
         )
-        self.assertEqual(vertex_dictionaries[0].name, "VertexData")
-        self.assertEqual(vertex_dictionaries[0].entries[0].string_value, "start")
+        if self.supports_feature(model, "vertex_attribute_dictionaries"):
+            self.assertEqual(vertex_dictionaries[0].name, "VertexData")
+            self.assertEqual(vertex_dictionaries[0].entries[0].string_value, "start")
+        else:
+            self.assertEqual(vertex_dictionaries, [])
 
         layer = next(layer for layer in model.layers if layer.name == "AttributedLayer")
-        layer_dictionaries = model.attribute_dictionaries_by_object_id[layer.id]
-        self.assertEqual(layer_dictionaries[0].name, "LayerData")
-        self.assertEqual(layer_dictionaries[0].entries[0].string_value, "architecture")
+        layer_dictionaries = model.attribute_dictionaries_by_object_id.get(layer.id, [])
+        if self.supports_feature(model, "layer_attribute_dictionaries"):
+            self.assertEqual(layer_dictionaries[0].name, "LayerData")
+            self.assertEqual(layer_dictionaries[0].entries[0].string_value, "architecture")
+        else:
+            self.assertEqual(layer_dictionaries, [])
 
 
 if __name__ == "__main__":
